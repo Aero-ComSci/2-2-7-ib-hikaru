@@ -1,4 +1,6 @@
 import subprocess
+from tkinter import Tk, Label, PhotoImage
+from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.scrolledtext as tksc
 from tkinter.filedialog import asksaveasfilename
@@ -28,21 +30,28 @@ def save_output():
             text_to_save = output_textbox.get("1.0", tk.END)
             file.write(text_to_save)
 
+def clear_output():
+    output_textbox.delete(1.0, tk.END)
+
 app = tk.Tk()
 app.title("Ping URL Checker")
+
+img = Image.open("lowtaper.png")
+photo = ImageTk.PhotoImage(img)
 
 urlf = tk.Frame(app, pady=10, bg="black")
 urlf.pack()
 
-url = tk.Label(urlf, text="Enter a URL of interest: ", compound="center", font=("Times New Roman", 14), fg="mediumpurple3", bg="black")
+url = tk.Label(urlf, text="Enter a URL of interest: ", compound="center", font=("Times New Roman", 14), fg="mediumpurple3", bg="black", image=photo)
 url.pack(side=tk.LEFT)
+
 address_entry = tk.Entry(urlf, font=("Times New Roman", 14))
 address_entry.pack(side=tk.LEFT)
 
 command_frame = tk.Frame(app, bg="black")
 command_frame.pack()
 
-ping_button = tk.Button(command_frame, text="Check to see if a URL is up and active", command=execute_command, compound="center", font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="black", activebackground="gray")
+ping_button = tk.Button(command_frame, text="Check to see if a URL is up and active", command=execute_command, compound="center", font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="green", activebackground="gray")
 ping_button.pack()
 
 output_textbox = tksc.ScrolledText(command_frame, height=10, width=100)
@@ -50,5 +59,9 @@ output_textbox.pack()
 
 save_button = tk.Button(command_frame, text="Save Output", command=save_output, font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="black", activebackground="gray")
 save_button.pack()
+
+
+clear_button = tk.Button(command_frame, text="Clear Output", command=clear_output, font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="red", activebackground="gray")
+clear_button.pack()
 
 app.mainloop()
