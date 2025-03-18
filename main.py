@@ -23,12 +23,15 @@ def execute_command():
     output_textbox.insert(tk.END, process_results.decode('utf-8'))
     output_textbox.insert(tk.END, process_errors.decode('utf-8'))
 
-def save_output():
-    filename = asksaveasfilename(defaultextension='.txt', filetypes=(('Text files', '*.txt'), ('Python files', '*.py *.pyw'), ('All files', '*.*')))
-    if filename:
-        with open(filename, mode='w') as file:
-            text_to_save = output_textbox.get("1.0", tk.END)
-            file.write(text_to_save)
+def mSave():
+  filename = asksaveasfilename(defaultextension='.txt',filetypes = (('Text files', '*.txt'),('Python files', '*.py *.pyw'),('All files', '*.*')))
+  if filename is None:
+    return
+  file = open (filename, mode = 'w')
+  text_to_save = output_textbox.get("1.0", tk.END)
+  
+  file.write(text_to_save)
+  file.close()
 
 def clear_output():
     output_textbox.delete(1.0, tk.END)
@@ -51,17 +54,17 @@ address_entry.pack(side=tk.LEFT)
 command_frame = tk.Frame(app, bg="black")
 command_frame.pack()
 
-ping_button = tk.Button(command_frame, text="Check to see if a URL is up and active", command=execute_command, compound="center", font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="green", activebackground="gray")
+ping_button = tk.Button(command_frame, text="Check to see if a URL is active", command=execute_command, compound="center", font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="green", activebackground="gray")
 ping_button.pack()
 
 output_textbox = tksc.ScrolledText(command_frame, height=10, width=100)
 output_textbox.pack()
 
-save_button = tk.Button(command_frame, text="Save Output", command=save_output, font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="black", activebackground="gray")
+save_button = tk.Button(command_frame, text="Save Output", command=mSave, font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="blue", activebackground="gray")
 save_button.pack()
 
 
-clear_button = tk.Button(command_frame, text="Clear Output", command=clear_output, font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart", bg="red", activebackground="gray")
+clear_button = tk.Button(command_frame, text="Clear Output", command=clear_output, font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="red", activebackground="gray")
 clear_button.pack()
 
 app.mainloop()
