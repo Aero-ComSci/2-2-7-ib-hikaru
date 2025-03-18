@@ -23,6 +23,29 @@ def execute_command():
     output_textbox.insert(tk.END, process_results.decode('utf-8'))
     output_textbox.insert(tk.END, process_errors.decode('utf-8'))
 
+def execute_traceroute():
+    global output_textbox, address_entry
+
+    output_textbox.delete(1.0, tk.END)
+    address_val = address_entry.get()
+    
+    if len(address_val) == 0:
+        address_val = "::1"
+
+    output_textbox.insert(tk.END, f"Tracing route to {address_val}...\n")
+    output_textbox.update()
+
+    process = subprocess.Popen(f"tracert {address_val}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process_results, process_errors = process.communicate()
+
+    output_textbox.insert(tk.END, process_results.decode('utf-8'))
+    output_textbox.insert(tk.END, process_errors.decode('utf-8'))
+    
+    traceroute_button = tk.Button(command_frame, text="Trace Route to URL", command=execute_traceroute, compound="center",
+                              font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart",
+                              bg="blue", activebackground="gray")
+    traceroute_button.pack()
+
 def mSave():
   filename = asksaveasfilename(defaultextension='.txt',filetypes = (('Text files', '*.txt'),('Python files', '*.py *.pyw'),('All files', '*.*')))
   if filename is None:
