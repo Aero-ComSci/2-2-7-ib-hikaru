@@ -40,11 +40,6 @@ def execute_traceroute():
 
     output_textbox.insert(tk.END, process_results.decode('utf-8'))
     output_textbox.insert(tk.END, process_errors.decode('utf-8'))
-    
-    traceroute_button = tk.Button(command_frame, text="Trace Route to URL", command=execute_traceroute, compound="center",
-                              font=("Times New Roman", 12), bd=0, relief="flat", cursor="heart",
-                              bg="blue", activebackground="gray")
-    traceroute_button.pack()
 
 def mSave():
   filename = asksaveasfilename(defaultextension='.txt',filetypes = (('Text files', '*.txt'),('Python files', '*.py *.pyw'),('All files', '*.*')))
