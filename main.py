@@ -59,6 +59,13 @@ def mSave():
 def clear_output():
     output_textbox.delete(1.0, tk.END)
 
+def lowtaper(root, image):
+    for widget in root.winfo_children():
+        if isinstance(widget, tk.Button):
+            widget.config(image=image)  
+        elif isinstance(widget, tk.Frame):
+            lowtaper(widget, image) 
+    
 app = tk.Tk()
 app.title("Ping URL Checker")
 
@@ -87,10 +94,12 @@ output_textbox = tksc.ScrolledText(command_frame, height=10, width=100)
 output_textbox.pack()
 
 save_button = tk.Button(command_frame, text="Save Output", command=mSave, font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="blue", activebackground="gray")
-save_button.pack()
-
+save_button.pack(side="left", padx=5)
 
 clear_button = tk.Button(command_frame, text="Clear Output", command=clear_output, font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="red", activebackground="gray")
-clear_button.pack()
+clear_button.pack(side="left", padx=5)
+
+taper = tk.Button(command_frame, text="Massive??!?!", command=lambda: lowtaper(app, photo), font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="Black", activebackground="gray")
+taper.pack(side="left", padx=5)
 
 app.mainloop()
