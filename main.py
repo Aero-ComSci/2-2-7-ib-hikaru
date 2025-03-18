@@ -77,6 +77,9 @@ address_entry.pack(side=tk.LEFT)
 command_frame = tk.Frame(app, bg="black")
 command_frame.pack()
 
+troute = tk.Button(command_frame, text="Trace Route", command=execute_traceroute, compound="center", font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="pink", activebackground="gray")
+troute.pack()
+
 ping_button = tk.Button(command_frame, text="Check to see if a URL is active", command=execute_command, compound="center", font=("Times New Roman", 12), bd=0, relief="flat", cursor="circle", bg="green", activebackground="gray")
 ping_button.pack()
 
