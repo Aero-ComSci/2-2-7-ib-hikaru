@@ -1,22 +1,22 @@
+import subprocess  
+import tkinter as tk  
+import tkinter.scrolledtext as tksc  
+from tkinter import messagebox  
+from tkinter.filedialog import asksaveasfilename  
+import threading  
+import platform  
+import socket  
 
-import subprocess
-import tkinter as tk
-import tkinter.scrolledtext as tksc
-from tkinter import messagebox
-from tkinter.filedialog import asksaveasfilename
-import threading
-import platform
-import socket
-
-
+# AI helped with this function to ensure proper DNS resolution and error handling.
 def dns_query(domain):
     output_box.insert(tk.END, f"Performing DNS lookup for {domain}...\n\n")
     try:
-        ip = socket.gethostbyname(domain)
+        ip = socket.gethostbyname(domain)  # Resolving domain to IP
         output_box.insert(tk.END, f"IP Address: {ip}\n")
     except socket.gaierror:
         output_box.insert(tk.END, f"Failed to resolve domain: {domain}\n")
         return
+    # AI suggested this check to determine if input is an IP and attempt reverse lookup
     if domain.count('.') == 3 and all(part.isdigit() for part in domain.split('.')):
         try:
             hostname, _, ip_addrs = socket.gethostbyaddr(domain)
@@ -25,7 +25,6 @@ def dns_query(domain):
         except socket.herror:
             output_box.insert(tk.END, "No hostname found for this IP.\n")
     output_box.insert(tk.END, "\n")
-
 
 def execute_shell_command(cmd, domain_or_ip):
     try:
@@ -45,7 +44,7 @@ def execute_shell_command(cmd, domain_or_ip):
     save_btn.config(state=tk.NORMAL)
     clear_btn.config(state=tk.NORMAL)
 
-
+# AI helped structure this function to handle different OS ping commands properly
 def ping_command(target):
     if platform.system() == "Windows":
         process = subprocess.Popen(["ping", "-n", "4", target], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -56,7 +55,6 @@ def ping_command(target):
     if errors:
         output_box.insert(tk.END, f"Errors:\n{errors}")
 
-
 def trace_route(target):
     traceroute_cmd = "tracert" if platform.system() == "Windows" else "traceroute"
     process = subprocess.Popen([traceroute_cmd, target], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -64,7 +62,6 @@ def trace_route(target):
     output_box.insert(tk.END, output)
     if errors:
         output_box.insert(tk.END, f"Errors:\n{errors}")
-
 
 def show_netstat():
     netstat_command = ["netstat", "-an"]
@@ -74,7 +71,7 @@ def show_netstat():
     if errors:
         output_box.insert(tk.END, f"Errors:\n{errors}")
 
-
+# AI helped structure this function using threading as Mr. Baez demnsotrated in class
 def execute_command():
     command = command_selector.get()
     domain_or_ip = input_field.get().strip()
@@ -93,7 +90,7 @@ def execute_command():
         threading.Thread(target=execute_shell_command, args=(command, domain_or_ip), daemon=True).start()
         output_frame.pack(fill=tk.BOTH, expand=True)
 
-
+# AI helped design this function for proper domain validation
 def validate_domain(domain):
     try:
         socket.gethostbyname(domain)
@@ -101,7 +98,7 @@ def validate_domain(domain):
     except socket.gaierror:
         return False
 
-
+# AI structured this function to handle saving output to a file safely
 def save_output():
     file_name = asksaveasfilename(defaultextension='.txt', filetypes=[('Text files', '*.txt')])
     if file_name:
@@ -112,10 +109,8 @@ def save_output():
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save file: {e}")
 
-
 def clear_output():
     output_box.delete(1.0, tk.END)
-
 
 def show_help():
     help_message = """
@@ -126,8 +121,8 @@ def show_help():
     
     For usage, input a domain name or IP address and select a command to run.
     """
+    #Used AI for the wording to make clear instructions
     messagebox.showinfo("Help", help_message)
-
 
 window = tk.Tk()
 window.title("Network Diagnostics Tool")
@@ -180,6 +175,3 @@ status_bar = tk.Label(window, text="Ready", bg="#6C757D", fg="white", font=("Ari
 status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
 window.mainloop()
-
-
-
