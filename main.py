@@ -83,7 +83,6 @@ def show_help():
     messagebox.showinfo("Help", help_message)
 
 window = tk.Tk()
-window.title("Network Diagnostics Tool")
 window.geometry("900x600")
 window.configure(bg="#E9ECEF")
 
