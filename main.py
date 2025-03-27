@@ -71,7 +71,7 @@ def show_netstat():
     if errors:
         output_box.insert(tk.END, f"Errors:\n{errors}")
 
-# AI helped structure this function using threading as Mr. Baez demnsotrated in class
+# AI helped structure this function using threading as Mr. Baez demonstrated in class
 def execute_command():
     command = command_selector.get()
     domain_or_ip = input_field.get().strip()
@@ -145,12 +145,12 @@ command_frame.pack(fill=tk.X, padx=30)
 command_label = tk.Label(command_frame, text="Select Command:", font=("Arial", 12), bg="#E9ECEF")
 command_label.pack(side=tk.LEFT, padx=10)
 
+#I used the drop bar to change up GUI to look diff
 command_selector = tk.StringVar(value="ping")
 commands = ["ping", "traceroute", "nslookup", "netstat"]
 
-for cmd in commands:
-    checkbutton = tk.Checkbutton(command_frame, text=cmd, variable=command_selector, onvalue=cmd, offvalue="", font=("Arial", 11), bg="#E9ECEF")
-    checkbutton.pack(side=tk.LEFT, padx=10)
+command_dropdown = tk.OptionMenu(command_frame, command_selector, *commands)
+command_dropdown.pack(side=tk.LEFT, padx=10)
 
 button_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 button_frame.pack(fill=tk.X, padx=30)
@@ -170,8 +170,5 @@ help_btn.pack(side=tk.LEFT, padx=12)
 output_frame = tk.Frame(window, bg="#E9ECEF", padx=30, pady=20)
 output_box = tksc.ScrolledText(output_frame, font=("Courier", 10), wrap=tk.WORD, height=15, bg="#343A40", fg="white")
 output_box.pack(fill=tk.BOTH, expand=True)
-
-status_bar = tk.Label(window, text="Ready", bg="#6C757D", fg="white", font=("Arial", 10), relief=tk.SUNKEN, anchor=tk.W)
-status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
 window.mainloop()
