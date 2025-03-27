@@ -4,71 +4,48 @@ import tkinter.scrolledtext as tksc
 from tkinter import messagebox  
 from tkinter.filedialog import asksaveasfilename  
 import threading  
-import platform  
 import socket  
 
-# AI helped with this function to ensure proper DNS resolution and error handling.
+# AI helped with this function to ensure proper DNS resolution.
 def dns_query(domain):
     output_box.insert(tk.END, f"Performing DNS lookup for {domain}...\n\n")
-    try:
-        ip = socket.gethostbyname(domain) 
-        output_box.insert(tk.END, f"IP Address: {ip}\n")
-    except socket.gaierror:
-        output_box.insert(tk.END, f"Failed to resolve domain: {domain}\n")
-        return
-    # AI suggested this check to determine if input is an IP and attempt reverse lookup
-    if domain.count('.') == 3 and all(part.isdigit() for part in domain.split('.')):  # Check if input is IP
-        try:
-            hostname, _, ip_addrs = socket.gethostbyaddr(domain)
-            output_box.insert(tk.END, f"Hostname: {hostname}\n")
-            output_box.insert(tk.END, f"Aliases: {', '.join(ip_addrs)}\n")
-        except socket.herror:
-            output_box.insert(tk.END, "No hostname found for this IP.\n")
+    ip = socket.gethostbyname(domain) 
+    output_box.insert(tk.END, f"IP Address: {ip}\n")
+    if domain.count('.') == 3 and all(part.isdigit() for part in domain.split('.')):
+        hostname, _, ip_addrs = socket.gethostbyaddr(domain)
+        output_box.insert(tk.END, f"Hostname: {hostname}\n")
+        output_box.insert(tk.END, f"Aliases: {', '.join(ip_addrs)}\n")
     output_box.insert(tk.END, "\n")
 
 def execute_shell_command(cmd, domain_or_ip):
-    try:
-        if cmd == "ping":
-            ping_command(domain_or_ip)
-        elif cmd == "traceroute":
-            trace_route(domain_or_ip)
-        elif cmd == "nslookup":
-            dns_query(domain_or_ip)
-        elif cmd == "netstat":
-            show_netstat()
-    except Exception as e:
-        output_box.insert(tk.END, f"Error: {str(e)}\n")
+    if cmd == "ping":
+        ping_command(domain_or_ip)
+    elif cmd == "traceroute":
+        trace_route(domain_or_ip)
+    elif cmd == "nslookup":
+        dns_query(domain_or_ip)
+    elif cmd == "netstat":
+        show_netstat()
     output_box.insert(tk.END, "Command executed.\n")
     output_box.see(tk.END)
     save_btn.config(state=tk.NORMAL)
     clear_btn.config(state=tk.NORMAL)
 
-# AI helped structure this function to handle different OS ping commands properly
+# AI helped structure this function to handle Windows ping commands properly
 def ping_command(target):
-    if platform.system() == "Windows":
-        process = subprocess.Popen(["ping", "-n", "4", target], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    else:
-        process = subprocess.Popen(["ping", "-c", "4", target], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    output, errors = process.communicate()
+    process = subprocess.Popen(["ping", "-n", "4", target], stdout=subprocess.PIPE, text=True)
+    output, _ = process.communicate()
     output_box.insert(tk.END, output)
-    if errors:
-        output_box.insert(tk.END, f"Errors:\n{errors}")
 
 def trace_route(target):
-    traceroute_cmd = "tracert" if platform.system() == "Windows" else "traceroute"
-    process = subprocess.Popen([traceroute_cmd, target], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    output, errors = process.communicate()
+    process = subprocess.Popen(["tracert", target], stdout=subprocess.PIPE, text=True)
+    output, _ = process.communicate()
     output_box.insert(tk.END, output)
-    if errors:
-        output_box.insert(tk.END, f"Errors:\n{errors}")
 
 def show_netstat():
-    netstat_command = ["netstat", "-an"]
-    process = subprocess.Popen(netstat_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    output, errors = process.communicate()
+    process = subprocess.Popen(["netstat", "-an"], stdout=subprocess.PIPE, text=True)
+    output, _ = process.communicate()
     output_box.insert(tk.END, output)
-    if errors:
-        output_box.insert(tk.END, f"Errors:\n{errors}")
 
 # AI helped structure this function using threading as Mr. Baez demonstrated in class
 def execute_command(event=None):
@@ -77,35 +54,18 @@ def execute_command(event=None):
     if not domain_or_ip:
         if command in ["ping", "traceroute", "nslookup"]:
             domain_or_ip = "localhost"
-        else:
-            domain_or_ip = ""
-    if command in ["ping", "traceroute", "nslookup"] and not validate_domain(domain_or_ip):
-        output_box.insert(tk.END, f"Could not resolve domain: {domain_or_ip}\n")
-    else:
-        output_box.delete(1.0, tk.END)
-        save_btn.config(state=tk.DISABLED)
-        clear_btn.config(state=tk.DISABLED)
-        threading.Thread(target=execute_shell_command, args=(command, domain_or_ip), daemon=True).start()
-        output_frame.pack(fill=tk.BOTH, expand=True)
+    output_box.delete(1.0, tk.END)
+    save_btn.config(state=tk.DISABLED)
+    clear_btn.config(state=tk.DISABLED)
+    threading.Thread(target=execute_shell_command, args=(command, domain_or_ip), daemon=True).start()
+    output_frame.pack(fill=tk.BOTH, expand=True)
 
-# AI helped design this function for proper domain validation
-def validate_domain(domain):
-    try:
-        socket.gethostbyname(domain)
-        return True
-    except socket.gaierror:
-        return False
-
-# AI structured this function to handle saving output to a file safely
 def save_output():
     file_name = asksaveasfilename(defaultextension='.txt', filetypes=[('Text files', '*.txt')])
     if file_name:
-        try:
-            with open(file_name, 'w') as file:
-                file.write(output_box.get(1.0, tk.END))
-            messagebox.showinfo("Success", f"File saved as {file_name}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save file: {e}")
+        with open(file_name, 'w') as file:
+            file.write(output_box.get(1.0, tk.END))
+        messagebox.showinfo("Success", f"File saved as {file_name}")
 
 def clear_output():
     output_box.delete(1.0, tk.END)
@@ -150,18 +110,9 @@ commands = ["ping", "traceroute", "nslookup", "netstat"]
 
 command_dropdown = tk.OptionMenu(command_frame, command_selector, *commands)
 command_dropdown.pack(side=tk.LEFT, padx=10)
-command_selector.trace_add("write", lambda *args: execute_command()) 
+command_selector.trace_add("write", lambda *args: execute_command()) #was running into an error with the selector had to use some outside help to debug it cuz it wouldn't run when the option is chosen on the selectr
 button_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 button_frame.pack(fill=tk.X, padx=30)
-
-save_btn = tk.Button(button_frame, text="Save", command=save_output, font=("Arial", 12), bg="#007BFF", fg="white", padx=15, pady=10)
-save_btn.pack(side=tk.LEFT, padx=12)
-
-clear_btn = tk.Button(button_frame, text="Clear", command=clear_output, font=("Arial", 12), bg="#DC3545", fg="white", padx=15, pady=10)
-clear_btn.pack(side=tk.LEFT, padx=12)
-
-help_btn = tk.Button(button_frame, text="Help", command=show_help, font=("Arial", 12), bg="#6C757D", fg="white", padx=15, pady=10)
-help_btn.pack(side=tk.LEFT, padx=12)
 
 output_frame = tk.Frame(window, bg="#E9ECEF", padx=30, pady=20)
 output_box = tksc.ScrolledText(output_frame, font=("Courier", 10), wrap=tk.WORD, height=15, bg="#343A40", fg="white")
