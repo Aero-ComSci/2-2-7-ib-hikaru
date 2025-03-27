@@ -11,13 +11,13 @@ import socket
 def dns_query(domain):
     output_box.insert(tk.END, f"Performing DNS lookup for {domain}...\n\n")
     try:
-        ip = socket.gethostbyname(domain)  # Resolving domain to IP
+        ip = socket.gethostbyname(domain) 
         output_box.insert(tk.END, f"IP Address: {ip}\n")
     except socket.gaierror:
         output_box.insert(tk.END, f"Failed to resolve domain: {domain}\n")
         return
     # AI suggested this check to determine if input is an IP and attempt reverse lookup
-    if domain.count('.') == 3 and all(part.isdigit() for part in domain.split('.')):
+    if domain.count('.') == 3 and all(part.isdigit() for part in domain.split('.')):  # Check if input is IP
         try:
             hostname, _, ip_addrs = socket.gethostbyaddr(domain)
             output_box.insert(tk.END, f"Hostname: {hostname}\n")
@@ -40,7 +40,6 @@ def execute_shell_command(cmd, domain_or_ip):
         output_box.insert(tk.END, f"Error: {str(e)}\n")
     output_box.insert(tk.END, "Command executed.\n")
     output_box.see(tk.END)
-    run_btn.config(state=tk.NORMAL)
     save_btn.config(state=tk.NORMAL)
     clear_btn.config(state=tk.NORMAL)
 
@@ -72,7 +71,7 @@ def show_netstat():
         output_box.insert(tk.END, f"Errors:\n{errors}")
 
 # AI helped structure this function using threading as Mr. Baez demonstrated in class
-def execute_command():
+def execute_command(event=None):
     command = command_selector.get()
     domain_or_ip = input_field.get().strip()
     if not domain_or_ip:
@@ -84,7 +83,6 @@ def execute_command():
         output_box.insert(tk.END, f"Could not resolve domain: {domain_or_ip}\n")
     else:
         output_box.delete(1.0, tk.END)
-        run_btn.config(state=tk.DISABLED)
         save_btn.config(state=tk.DISABLED)
         clear_btn.config(state=tk.DISABLED)
         threading.Thread(target=execute_shell_command, args=(command, domain_or_ip), daemon=True).start()
@@ -138,6 +136,7 @@ input_label.pack(side=tk.LEFT, padx=10)
 input_field = tk.Entry(input_frame, font=("Arial", 12), width=40)
 input_field.pack(side=tk.LEFT, fill=tk.X)
 input_field.insert(0, "localhost")
+input_field.bind("<Return>", execute_command)  # Bind Enter key to trigger command execution
 
 command_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 command_frame.pack(fill=tk.X, padx=30)
@@ -145,18 +144,15 @@ command_frame.pack(fill=tk.X, padx=30)
 command_label = tk.Label(command_frame, text="Select Command:", font=("Arial", 12), bg="#E9ECEF")
 command_label.pack(side=tk.LEFT, padx=10)
 
-#I used the drop bar to change up GUI to look diff
+# I used the drop bar to change up GUI to look diff
 command_selector = tk.StringVar(value="ping")
 commands = ["ping", "traceroute", "nslookup", "netstat"]
 
 command_dropdown = tk.OptionMenu(command_frame, command_selector, *commands)
 command_dropdown.pack(side=tk.LEFT, padx=10)
-
+command_selector.trace_add("write", lambda *args: execute_command()) 
 button_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 button_frame.pack(fill=tk.X, padx=30)
-
-run_btn = tk.Button(button_frame, text="Run", command=execute_command, font=("Arial", 12, "bold"), bg="#28A745", fg="white", padx=15, pady=10)
-run_btn.pack(side=tk.LEFT, padx=12)
 
 save_btn = tk.Button(button_frame, text="Save", command=save_output, font=("Arial", 12), bg="#007BFF", fg="white", padx=15, pady=10)
 save_btn.pack(side=tk.LEFT, padx=12)
