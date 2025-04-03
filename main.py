@@ -1,15 +1,14 @@
-import subprocess  
-import tkinter as tk  
-import tkinter.scrolledtext as tksc  
-from tkinter import messagebox  
-from tkinter.filedialog import asksaveasfilename  
-import threading  
-import socket  
+import subprocess
+import tkinter as tk
+import tkinter.scrolledtext as tksc
+from tkinter import messagebox
+from tkinter.filedialog import asksaveasfilename
+import threading
+import socket
 
-# AI helped with this function to ensure proper DNS resolution.
 def dns_query(domain):
     output_box.insert(tk.END, f"Performing DNS lookup for {domain}...\n\n")
-    ip = socket.gethostbyname(domain) 
+    ip = socket.gethostbyname(domain)
     output_box.insert(tk.END, f"IP Address: {ip}\n")
     if domain.count('.') == 3 and all(part.isdigit() for part in domain.split('.')):
         hostname, _, ip_addrs = socket.gethostbyaddr(domain)
@@ -17,7 +16,20 @@ def dns_query(domain):
         output_box.insert(tk.END, f"Aliases: {', '.join(ip_addrs)}\n")
     output_box.insert(tk.END, "\n")
 
+def whois_query(domain):
+    output_box.insert(tk.END, f"Performing Whois lookup for {domain}...\n\n")
+    process = subprocess.Popen(["whois", domain], stdout=subprocess.PIPE, text=True)
+    output, _ = process.communicate()
+    output_box.insert(tk.END, output)
+
+def show_arp_table():
+    output_box.insert(tk.END, "Retrieving ARP Table...\n\n")
+    process = subprocess.Popen(["arp", "-a"], stdout=subprocess.PIPE, text=True)
+    output, _ = process.communicate()
+    output_box.insert(tk.END, output)
+
 def execute_shell_command(cmd, domain_or_ip):
+    update_status("Executing command...")
     if cmd == "ping":
         ping_command(domain_or_ip)
     elif cmd == "traceroute":
@@ -26,12 +38,16 @@ def execute_shell_command(cmd, domain_or_ip):
         dns_query(domain_or_ip)
     elif cmd == "netstat":
         show_netstat()
+    elif cmd == "whois":
+        whois_query(domain_or_ip)
+    elif cmd == "arp":
+        show_arp_table()
     output_box.insert(tk.END, "Command executed.\n")
     output_box.see(tk.END)
     save_btn.config(state=tk.NORMAL)
     clear_btn.config(state=tk.NORMAL)
+    update_status("Command completed.")
 
-# AI helped structure this function to handle Windows ping commands properly
 def ping_command(target):
     process = subprocess.Popen(["ping", "-n", "4", target], stdout=subprocess.PIPE, text=True)
     output, _ = process.communicate()
@@ -47,12 +63,11 @@ def show_netstat():
     output, _ = process.communicate()
     output_box.insert(tk.END, output)
 
-# AI helped structure this function using threading as Mr. Baez demonstrated in class
 def execute_command(event=None):
     command = command_selector.get()
     domain_or_ip = input_field.get().strip()
     if not domain_or_ip:
-        if command in ["ping", "traceroute", "nslookup"]:
+        if command in ["ping", "traceroute", "nslookup", "whois"]:
             domain_or_ip = "localhost"
     output_box.delete(1.0, tk.END)
     save_btn.config(state=tk.DISABLED)
@@ -76,15 +91,22 @@ def show_help():
     Traceroute: Displays the route packets take to a network host.
     Nslookup: Queries DNS records to get IP addresses of a domain.
     Netstat: Shows network connections, routing tables, and interface statistics.
-    
-    For usage, input a domain name or IP address and select a command to run.
+    Whois: Retrieves domain registration and ownership information.
+    ARP Table: Displays IP to MAC address mappings in the local network.
     """
-    #Used AI for the wording to make clear instructions
     messagebox.showinfo("Help", help_message)
 
+def update_status(status_text):
+    status_var.set(status_text)
+    status_bar.update()
+
 window = tk.Tk()
-window.geometry("900x600")
+window.geometry("900x650")
 window.configure(bg="#E9ECEF")
+
+status_var = tk.StringVar(value="Ready")
+status_bar = tk.Label(window, textvariable=status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W, bg="#F8F9FA")
+status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
 input_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 input_frame.pack(fill=tk.X, padx=30)
@@ -95,7 +117,7 @@ input_label.pack(side=tk.LEFT, padx=10)
 input_field = tk.Entry(input_frame, font=("Arial", 12), width=40)
 input_field.pack(side=tk.LEFT, fill=tk.X)
 input_field.insert(0, "localhost")
-input_field.bind("<Return>", execute_command)  # Bind Enter key to trigger command execution
+input_field.bind("<Return>", execute_command)
 
 command_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 command_frame.pack(fill=tk.X, padx=30)
@@ -103,15 +125,24 @@ command_frame.pack(fill=tk.X, padx=30)
 command_label = tk.Label(command_frame, text="Select Command:", font=("Arial", 12), bg="#E9ECEF")
 command_label.pack(side=tk.LEFT, padx=10)
 
-# I used the drop bar to change up GUI to look diff
 command_selector = tk.StringVar(value="ping")
-commands = ["ping", "traceroute", "nslookup", "netstat"]
-
+commands = ["ping", "traceroute", "nslookup", "netstat", "whois", "arp"]
 command_dropdown = tk.OptionMenu(command_frame, command_selector, *commands)
 command_dropdown.pack(side=tk.LEFT, padx=10)
-command_selector.trace_add("write", lambda *args: execute_command()) #was running into an error with the selector had to use some outside help to debug it cuz it wouldn't run when the option is chosen on the selectr
+
 button_frame = tk.Frame(window, pady=20, bg="#E9ECEF")
 button_frame.pack(fill=tk.X, padx=30)
+
+save_btn = tk.Button(button_frame, text="Save Output", command=save_output)
+save_btn.pack(side=tk.LEFT, padx=10)
+save_btn.config(state=tk.DISABLED)
+
+clear_btn = tk.Button(button_frame, text="Clear Output", command=clear_output)
+clear_btn.pack(side=tk.LEFT, padx=10)
+clear_btn.config(state=tk.DISABLED)
+
+help_btn = tk.Button(button_frame, text="Help", command=show_help)
+help_btn.pack(side=tk.LEFT, padx=10)
 
 output_frame = tk.Frame(window, bg="#E9ECEF", padx=30, pady=20)
 output_box = tksc.ScrolledText(output_frame, font=("Courier", 10), wrap=tk.WORD, height=15, bg="#343A40", fg="white")
